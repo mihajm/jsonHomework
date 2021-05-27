@@ -11,11 +11,12 @@ $ npm install
 ## Running the app
 
 ```bash
-# watch mode
+# run in watch mode
+$ docker compose up -d
 $ npm run start:dev
 
 
-## Information
+# Information
 
 Swagger documentation is available at localhost:3000/docs/ once watch mode has started.
 
