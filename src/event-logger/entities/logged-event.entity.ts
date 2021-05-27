@@ -1,9 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { CreateLoggedEventDto } from '../dto/logged-event.dto';
 
 @Entity('event_table')
 export class loggedEvent {
-  constructor(createLoggedEventDto: CreateLoggedEventDto) {
+  constructor() {
     this.startTime = new Date();
   }
   @PrimaryGeneratedColumn({ name: 'ID' })
