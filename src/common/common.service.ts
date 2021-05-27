@@ -3,7 +3,6 @@ import { DiseaseService } from 'src/disease/disease.service';
 import { DoctorService } from 'src/doctor/doctor.service';
 import { EventLogger } from 'src/event-logger/event-logger.service';
 import { PatientService } from 'src/patient/patient.service';
-import { Connection } from 'typeorm';
 
 @Injectable()
 export class CommonService {
