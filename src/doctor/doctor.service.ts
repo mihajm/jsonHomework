@@ -4,12 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Connection,
-  Repository,
-  Transaction,
-  TransactionRepository,
-} from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateDoctorDto, UpdateDoctorDto } from './dto/doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { PatientService } from '../patient/patient.service';
@@ -21,7 +16,6 @@ export class DoctorService {
     @InjectRepository(Doctor)
     private readonly doctorRepository: Repository<Doctor>,
     private readonly patientService: PatientService,
-    private readonly connection: Connection,
   ) {}
 
   //returns all data
