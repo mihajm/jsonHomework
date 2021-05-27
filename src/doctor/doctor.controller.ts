@@ -8,7 +8,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CommonService } from 'src/common/common.service';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { DoctorService } from './doctor.service';
@@ -22,6 +22,8 @@ export class DoctorController {
     private readonly commonService: CommonService,
   ) {}
 
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'offset', required: false })
   @Get()
   findAll(@Query() paginationQuery: PaginationQueryDto) {
     return this.commonService.tryCatchWrapper(
