@@ -6,7 +6,7 @@ import { EventLogger } from './event-logger/event-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: false,
+    logger: true,
   });
 
   app.useLogger(await app.resolve(EventLogger));
