@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { DiseaseService } from 'src/disease/disease.service';
 import {
   CreateDiseaseDto,
@@ -45,9 +46,12 @@ export class PatientService {
     });
   }
 
-  async findAll() {
+  async findAll(paginationQuery: PaginationQueryDto) {
+    const { limit, offset } = paginationQuery;
     return await this.patientRepository.find({
       relations: ['diseases'],
+      skip: offset,
+      take: limit,
     });
   }
 

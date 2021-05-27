@@ -6,38 +6,64 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { CommonService } from 'src/common/common.service';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { DoctorService } from './doctor.service';
 import { CreateDoctorDto, UpdateDoctorDto } from './dto/doctor.dto';
 
 @ApiTags('doctor')
 @Controller('doctor')
 export class DoctorController {
-  constructor(private readonly doctorService: DoctorService) {}
+  constructor(
+    private readonly doctorService: DoctorService,
+    private readonly commonService: CommonService,
+  ) {}
 
   @Get()
-  findAll() {
-    return this.doctorService.findAll();
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.commonService.tryCatchWrapper(
+      'findAllDoctors',
+      null,
+      this.doctorService.findAll(paginationQuery),
+    );
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.doctorService.findOne(id);
+    return this.commonService.tryCatchWrapper(
+      'findDoctor',
+      `'id': ${id}`,
+      this.doctorService.findOne(id),
+    );
   }
 
   @Post()
   create(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.doctorService.create(createDoctorDto);
+    return this.commonService.tryCatchWrapper(
+      'createDoctor',
+      JSON.stringify(createDoctorDto),
+      this.doctorService.create(createDoctorDto),
+    );
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
-    return this.doctorService.update(id, updateDoctorDto);
+    return this.commonService.tryCatchWrapper(
+      'updateDoctor',
+      `'id': ${id}, json: ${JSON.stringify(updateDoctorDto)}`,
+      this.doctorService.update(id, updateDoctorDto),
+    );
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.doctorService.remove(id);
+    return this.commonService.tryCatchWrapper(
+      'deleteDoctor',
+      `'id': ${id}`,
+      this.doctorService.remove(id),
+    );
   }
 }

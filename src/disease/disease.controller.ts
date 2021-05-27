@@ -6,38 +6,64 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { CommonService } from 'src/common/common.service';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { DiseaseService } from './disease.service';
 import { CreateDiseaseDto, UpdateDiseaseDto } from './dto/disease.dto';
 
 @ApiTags('disease')
 @Controller('disease')
 export class DiseaseController {
-  constructor(private readonly diseaseService: DiseaseService) {}
+  constructor(
+    private readonly diseaseService: DiseaseService,
+    private readonly commonService: CommonService,
+  ) {}
 
   @Get()
-  findAll() {
-    return this.diseaseService.findAll();
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.commonService.tryCatchWrapper(
+      'findAllDiseases',
+      null,
+      this.diseaseService.findAll(paginationQuery),
+    );
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.diseaseService.findOne(id);
+    return this.commonService.tryCatchWrapper(
+      'findDisese',
+      `'id': ${id}`,
+      this.diseaseService.findOne(id),
+    );
   }
 
   @Post()
   create(@Body() createDiseaseDto: CreateDiseaseDto) {
-    return this.diseaseService.create(createDiseaseDto);
+    return this.commonService.tryCatchWrapper(
+      'createDisease',
+      JSON.stringify(createDiseaseDto),
+      this.diseaseService.create(createDiseaseDto),
+    );
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDiseaseDto: UpdateDiseaseDto) {
-    return this.diseaseService.update(id, updateDiseaseDto);
+    return this.commonService.tryCatchWrapper(
+      'updateDisease',
+      `'id': ${id}, json: ${JSON.stringify(updateDiseaseDto)}`,
+      this.diseaseService.update(id, updateDiseaseDto),
+    );
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.diseaseService.remove(id);
+    return this.commonService.tryCatchWrapper(
+      'deleteDisease',
+      `'id': ${id}`,
+      this.diseaseService.remove(id),
+    );
   }
 }

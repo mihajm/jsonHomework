@@ -3,9 +3,10 @@ import { DiseaseService } from './disease.service';
 import { DiseaseController } from './disease.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Disease } from './entities/disease.entity';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Disease])],
+  imports: [CommonModule, TypeOrmModule.forFeature([Disease])],
   providers: [DiseaseService],
   controllers: [DiseaseController],
   exports: [DiseaseService],

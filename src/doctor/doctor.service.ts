@@ -4,10 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {
+  Connection,
+  Repository,
+  Transaction,
+  TransactionRepository,
+} from 'typeorm';
 import { CreateDoctorDto, UpdateDoctorDto } from './dto/doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { PatientService } from '../patient/patient.service';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 
 @Injectable()
 export class DoctorService {
@@ -15,12 +21,17 @@ export class DoctorService {
     @InjectRepository(Doctor)
     private readonly doctorRepository: Repository<Doctor>,
     private readonly patientService: PatientService,
+    private readonly connection: Connection,
   ) {}
 
   //returns all data
-  async findAll() {
+  async findAll(paginationQuery: PaginationQueryDto) {
+    const { limit, offset } = paginationQuery;
+
     return await this.doctorRepository.find({
       relations: ['patients', 'patients.diseases'],
+      skip: offset,
+      take: limit,
     });
   }
 
