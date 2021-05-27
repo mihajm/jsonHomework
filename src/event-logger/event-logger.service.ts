@@ -1,5 +1,6 @@
 import { Injectable, Logger, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { Repository } from 'typeorm';
 import { CreateLoggedEventDto } from './dto/logged-event.dto';
 import { loggedEvent } from './entities/logged-event.entity';
@@ -24,7 +25,8 @@ export class EventLogger extends Logger {
     this.storeLog(createLoggedEventDto);
     super.error(message, trace);
   }
-  async findAll() {
-    return await this.eventRepository.find();
+  async findAll(paginationQuery: PaginationQueryDto) {
+    const { limit, offset } = paginationQuery;
+    return await this.eventRepository.find({ skip: offset, take: limit });
   }
 }
