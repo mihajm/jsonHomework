@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 
 export class CreatePatientDto {
   @ApiProperty({
@@ -7,6 +7,9 @@ export class CreatePatientDto {
     example: '5',
   })
   @IsString()
+  @Matches(/\d+/g, {
+    message: 'Patient id can only contain numbers Example: 5',
+  })
   readonly id: string;
 
   @ApiProperty({
@@ -14,6 +17,10 @@ export class CreatePatientDto {
     example: 'Miha',
   })
   @IsString()
+  @Matches(/^[A-Z][a-z]+$/g, {
+    message:
+      "First name can only contain letters, first letter must be capitalized Ex: 'Miha'",
+  })
   readonly first_name: string;
 
   @ApiProperty({
@@ -21,6 +28,10 @@ export class CreatePatientDto {
     example: 'Mulec',
   })
   @IsString()
+  @Matches(/^[A-Z][a-z]+$/g, {
+    message:
+      "Last name can only contain letters, first letter must be capitalized Ex: 'Mulec'",
+  })
   readonly last_name: string;
 
   @ApiProperty({

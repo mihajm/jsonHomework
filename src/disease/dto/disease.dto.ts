@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
 
 export class CreateDiseaseDto {
   @ApiProperty({
@@ -7,6 +7,10 @@ export class CreateDiseaseDto {
     example: 'very_good_at_code',
   })
   @IsString()
+  @Matches(/^[a-z_]+$/g, {
+    message:
+      "Disease name can't contain any spaces, capitalized letters or numbers, words should be separated with an underscore. Example: 'very_good_disease_example'",
+  })
   readonly name: string;
 }
 

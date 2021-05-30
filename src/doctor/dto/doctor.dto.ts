@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsArray, IsString } from 'class-validator';
+import { IsArray, IsString, Matches } from 'class-validator';
 import { CreatePatientDto } from 'src/patient/dto/patient.dto';
 
 export class CreateDoctorDto {
@@ -8,6 +8,9 @@ export class CreateDoctorDto {
     example: '100',
   })
   @IsString()
+  @Matches(/\d+/g, {
+    message: 'Doctor id can only contain numbers Example: 100',
+  })
   readonly id: string;
 
   @ApiProperty({
@@ -15,11 +18,15 @@ export class CreateDoctorDto {
     example: 'marand',
   })
   @IsString()
+  @Matches(/\w\D[^-]*/g, {
+    message:
+      "Department name can only contain letters, words should be separated by underscore Ex: 'marand_development'",
+  })
   readonly department: string;
 
   @ApiProperty({
     description: 'An array of the doctors patients as json objects',
-    example: ['extremely_happy', 'understands_REST'],
+    example: `[{"id": "1","first_name": "John","last_name": "Smith","diseases": ["nice_to_people","long_legs"]}]`,
   })
   @IsArray()
   readonly patients?: CreatePatientDto[];
