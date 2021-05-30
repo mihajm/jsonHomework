@@ -24,8 +24,8 @@ export class PatientController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'offset', required: false })
   @Get()
-  findAll(@Query() paginationQuery: PaginationQueryDto) {
-    return this.commonService.tryCatchWrapper(
+  async findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return await this.commonService.tryCatchWrapper(
       'findAllPatients',
       null,
       this.patientService.findAll(paginationQuery),
@@ -33,8 +33,8 @@ export class PatientController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commonService.tryCatchWrapper(
+  async findOne(@Param('id') id: string) {
+    return await this.commonService.tryCatchWrapper(
       'findOnePatient',
       `'id': ${id}`,
       this.patientService.findOne(id),

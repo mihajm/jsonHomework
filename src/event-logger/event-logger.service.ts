@@ -1,4 +1,9 @@
-import { Injectable, Logger, Scope } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  Scope,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
 import { Repository } from 'typeorm';
@@ -27,6 +32,21 @@ export class EventLogger extends Logger {
   }
   async findAll(paginationQuery: PaginationQueryDto) {
     const { limit, offset } = paginationQuery;
-    return await this.eventRepository.find({ skip: offset, take: limit });
+    const events = await this.eventRepository.find({
+      skip: offset,
+      take: limit,
+    });
+
+    if (
+      !events.every((event) => {
+        return event instanceof EventLogger;
+      })
+    ) {
+      throw new InternalServerErrorException(
+        'Database error, misshappen data returned.',
+      );
+    }
+
+    return events;
   }
 }

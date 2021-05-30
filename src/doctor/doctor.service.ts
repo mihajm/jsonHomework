@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,19 +23,40 @@ export class DoctorService {
   async findAll(paginationQuery: PaginationQueryDto) {
     const { limit, offset } = paginationQuery;
 
-    return await this.doctorRepository.find({
+    const doctors = await this.doctorRepository.find({
       relations: ['patients', 'patients.diseases'],
       skip: offset,
       take: limit,
     });
+
+    if (
+      !doctors.every((doctor) => {
+        return doctor instanceof Doctor;
+      })
+    ) {
+      throw new InternalServerErrorException(
+        'Database error, misshappen data returned.',
+      );
+    }
+
+    return doctors;
   }
 
   async findOne(id: string, skipError = false) {
     const doctor = await this.doctorRepository.findOne(id, {
       relations: ['patients', 'patients.diseases'],
     });
-    if (!doctor && !skipError)
+
+    if (!doctor && !skipError) {
       throw new NotFoundException(`Doctor with id: ${id} not found`);
+    }
+
+    if (doctor instanceof Doctor === false) {
+      throw new InternalServerErrorException(
+        'Database error, misshappen data returned.',
+      );
+    }
+
     return doctor;
   }
 
