@@ -1,8 +1,9 @@
 import { Patient } from 'src/patient/entitites/patient.entity';
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Index, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity('DOCTORS')
 export class Doctor {
+  @Index('DOCTOR_ID_INDEX')
   @PrimaryColumn({ name: 'ID' })
   id: string;
 

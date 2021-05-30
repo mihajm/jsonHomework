@@ -4,6 +4,7 @@ import { Doctor } from 'src/doctor/entities/doctor.entity';
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -13,6 +14,7 @@ import {
 
 @Entity('PATIENTS')
 export class Patient {
+  @Index('PATIENT-ID-INDEX')
   @PrimaryColumn({ name: 'ID' })
   id: string;
 

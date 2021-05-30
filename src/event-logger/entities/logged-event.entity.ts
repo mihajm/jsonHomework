@@ -1,10 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('event_table')
 export class loggedEvent {
   constructor() {
     this.startTime = new Date();
   }
+  @Index('EVENT-ID-INDEX')
   @PrimaryGeneratedColumn({ name: 'ID' })
   id: string;
 
