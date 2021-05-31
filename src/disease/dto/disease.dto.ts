@@ -7,7 +7,7 @@ export class CreateDiseaseDto {
     example: 'very_good_at_code',
   })
   @IsString()
-  @Matches(/^[a-z_]+$/g, {
+  @Matches(/\d*/, {
     message:
       "Disease name can't contain any spaces, capitalized letters or numbers, words should be separated with an underscore. Example: 'very_good_disease_example'",
   })

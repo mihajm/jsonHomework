@@ -8,7 +8,7 @@ export class CreateDoctorDto {
     example: '100',
   })
   @IsString()
-  @Matches(/\d+/g, {
+  @Matches(/\d*/, {
     message: 'Doctor id can only contain numbers Example: 100',
   })
   readonly id: string;
@@ -18,7 +18,7 @@ export class CreateDoctorDto {
     example: 'marand',
   })
   @IsString()
-  @Matches(/\w\D[^-]*/g, {
+  @Matches(/\w*/, {
     message:
       "Department name can only contain letters, words should be separated by underscore Ex: 'marand_development'",
   })

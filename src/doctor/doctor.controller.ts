@@ -44,28 +44,16 @@ export class DoctorController {
 
   @Post()
   create(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.commonService.tryCatchWrapper(
-      'createDoctor',
-      JSON.stringify(createDoctorDto),
-      this.doctorService.create(createDoctorDto),
-    );
+    return this.doctorService.save(createDoctorDto);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
-    return this.commonService.tryCatchWrapper(
-      'updateDoctor',
-      `'id': ${id}, json: ${JSON.stringify(updateDoctorDto)}`,
-      this.doctorService.update(id, updateDoctorDto),
-    );
+    return this.doctorService.update(id, updateDoctorDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.commonService.tryCatchWrapper(
-      'deleteDoctor',
-      `'id': ${id}`,
-      this.doctorService.remove(id),
-    );
+    return this.doctorService.remove(id);
   }
 }

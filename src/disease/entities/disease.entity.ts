@@ -6,6 +6,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { CreateDiseaseDto } from '../dto/disease.dto';
 
 @Entity('DISEASES')
 @Index(['ID', 'name'])

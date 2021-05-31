@@ -6,12 +6,13 @@ import { Patient } from './entitites/patient.entity';
 import { DiseaseModule } from 'src/disease/disease.module';
 import { EventLoggerModule } from 'src/event-logger/event-logger.module';
 import { CommonModule } from 'src/common/common.module';
+import { Disease } from 'src/disease/entities/disease.entity';
 
 @Module({
   imports: [
     DiseaseModule,
     EventLoggerModule,
-    TypeOrmModule.forFeature([Patient]),
+    TypeOrmModule.forFeature([Patient, Disease]),
     CommonModule,
   ],
   providers: [PatientService],

@@ -7,7 +7,7 @@ export class CreatePatientDto {
     example: '5',
   })
   @IsString()
-  @Matches(/\d+/g, {
+  @Matches(/\d*/, {
     message: 'Patient id can only contain numbers Example: 5',
   })
   readonly id: string;
@@ -17,7 +17,7 @@ export class CreatePatientDto {
     example: 'Miha',
   })
   @IsString()
-  @Matches(/^[A-Z][a-z]+$/g, {
+  @Matches(/^[A-Z][a-z]*/, {
     message:
       "First name can only contain letters, first letter must be capitalized Ex: 'Miha'",
   })
@@ -28,7 +28,7 @@ export class CreatePatientDto {
     example: 'Mulec',
   })
   @IsString()
-  @Matches(/^[A-Z][a-z]+$/g, {
+  @Matches(/^[A-Z][a-z]*/, {
     message:
       "Last name can only contain letters, first letter must be capitalized Ex: 'Mulec'",
   })

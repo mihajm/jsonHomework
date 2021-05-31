@@ -24,8 +24,8 @@ export class PatientController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'offset', required: false })
   @Get()
-  async findAll(@Query() paginationQuery: PaginationQueryDto) {
-    return await this.commonService.tryCatchWrapper(
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.commonService.tryCatchWrapper(
       'findAllPatients',
       null,
       this.patientService.findAll(paginationQuery),
@@ -33,8 +33,8 @@ export class PatientController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.commonService.tryCatchWrapper(
+  findOne(@Param('id') id: string) {
+    return this.commonService.tryCatchWrapper(
       'findOnePatient',
       `'id': ${id}`,
       this.patientService.findOne(id),
@@ -43,28 +43,16 @@ export class PatientController {
 
   @Post()
   create(@Body() createPatientDto: CreatePatientDto) {
-    return this.commonService.tryCatchWrapper(
-      'createPatient',
-      JSON.stringify(createPatientDto),
-      this.patientService.create(createPatientDto),
-    );
+    return this.patientService.save(createPatientDto);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
-    return this.commonService.tryCatchWrapper(
-      'updatePatient',
-      `'id': ${id}, json: ${JSON.stringify(updatePatientDto)}`,
-      this.patientService.update(id, updatePatientDto),
-    );
+    return this.patientService.update(id, updatePatientDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.commonService.tryCatchWrapper(
-      'removePatient',
-      `'id': ${id}`,
-      this.patientService.remove(id),
-    );
+    return this.patientService.remove(id);
   }
 }
