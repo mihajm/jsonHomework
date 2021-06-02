@@ -1,5 +1,12 @@
 import { Patient } from 'src/patient/entitites/patient.entity';
-import { Column, Entity, Index, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinTable,
+  ManyToMany,
+  PrimaryColumn,
+} from 'typeorm';
 
 @Entity('DOCTORS')
 export class Doctor {
@@ -10,6 +17,13 @@ export class Doctor {
   @Column({ name: 'DEPARTMENT' })
   department: string;
 
-  @OneToMany(() => Patient, (patient) => patient.doctor, { cascade: true })
+  @ManyToMany((type) => Patient, (patients) => patients.doctors, {
+    cascade: true,
+  })
+  @JoinTable({
+    name: 'DOCTOR_PATIENT',
+    joinColumn: { name: 'DOCTOR_ID', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'PATIENT_ID', referencedColumnName: 'id' },
+  })
   patients: Patient[];
 }
