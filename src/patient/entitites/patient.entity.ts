@@ -18,9 +18,8 @@ export class Patient {
   @PrimaryColumn({ name: 'ID' })
   id: string;
 
-  @ManyToOne(() => Doctor, (doctor) => doctor.patients)
-  @JoinColumn({ name: 'DOCTOR_ID' })
-  doctor: Doctor;
+  @ManyToMany((type) => Doctor, (doctors) => doctors.patients)
+  doctors: Doctor[];
 
   @Column({ name: 'FIRST_NAME' })
   first_name: string;
