@@ -25,35 +25,75 @@ export class DiseaseController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'offset', required: false })
   @Get()
-  findAll(@Query() paginationQuery: PaginationQueryDto) {
-    return this.commonService.tryCatchWrapper(
+  async findAll(@Query() paginationQuery: PaginationQueryDto) {
+    const { queryRunner, log } = await this.commonService.provideQr(
       'findAllDiseases',
       null,
-      this.diseaseService.findAll(paginationQuery),
+    );
+
+    return await this.commonService.tryCatchWrapper(
+      await this.diseaseService.findAll(queryRunner, paginationQuery),
+      queryRunner,
+      log,
     );
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commonService.tryCatchWrapper(
-      'findDisese',
-      `'id': ${id}`,
-      this.diseaseService.findOne(id),
+  async findOne(@Param('id') id: string) {
+    const { queryRunner, log } = await this.commonService.provideQr(
+      'findOneDisease',
+      `id: ${id}`,
+    );
+
+    return await this.commonService.tryCatchWrapper(
+      await this.diseaseService.findOne(queryRunner, id, false),
+      queryRunner,
+      log,
     );
   }
 
   @Post()
-  create(@Body() createDiseaseDto: CreateDiseaseDto) {
-    return this.diseaseService.save(createDiseaseDto);
+  async create(@Body() createDiseaseDto: CreateDiseaseDto) {
+    const { queryRunner, log } = await this.commonService.provideQr(
+      'saveDisease',
+      JSON.stringify(createDiseaseDto),
+    );
+
+    return await this.commonService.tryCatchWrapper(
+      await this.diseaseService.save(queryRunner, createDiseaseDto),
+      queryRunner,
+      log,
+    );
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDiseaseDto: UpdateDiseaseDto) {
-    return this.diseaseService.update(id, updateDiseaseDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateDiseaseDto: UpdateDiseaseDto,
+  ) {
+    const { queryRunner, log } = await this.commonService.provideQr(
+      'updateDisease',
+      `id: ${id}, payload: ${JSON.stringify(updateDiseaseDto)}`,
+    );
+
+    return await this.commonService.tryCatchWrapper(
+      await this.diseaseService.update(queryRunner, id, updateDiseaseDto),
+      queryRunner,
+      log,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.diseaseService.remove(id);
+  async remove(@Param('id') id: string) {
+    const { queryRunner, log } = await this.commonService.provideQr(
+      'removeDisease',
+      `id: ${id}`,
+    );
+
+    return await this.commonService.tryCatchWrapper(
+      await this.diseaseService.remove(queryRunner, id),
+      queryRunner,
+      log,
+    );
   }
 }

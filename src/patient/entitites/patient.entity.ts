@@ -1,14 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Disease } from 'src/disease/entities/disease.entity';
 import { Doctor } from 'src/doctor/entities/doctor.entity';
 import {
   Column,
   Entity,
   Index,
-  JoinColumn,
   JoinTable,
   ManyToMany,
-  ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
 

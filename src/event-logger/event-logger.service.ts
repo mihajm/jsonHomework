@@ -1,52 +1,21 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  Scope,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { Repository } from 'typeorm';
-import { CreateLoggedEventDto } from './dto/logged-event.dto';
+import { QueryRunner } from 'typeorm';
 import { loggedEvent } from './entities/logged-event.entity';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class EventLogger extends Logger {
-  constructor(
-    @InjectRepository(loggedEvent)
-    private readonly eventRepository: Repository<loggedEvent>,
-  ) {
+  constructor() {
     super();
   }
-  async storeLog(createLoggedEventDto: CreateLoggedEventDto) {
-    const log = await this.eventRepository.create(createLoggedEventDto);
-    return await this.eventRepository.save(log);
-  }
-  error(message: string, trace: string, context?: string) {
-    const createLoggedEventDto: CreateLoggedEventDto = {
-      context: context,
-      errorMsg: message,
-    };
-    this.storeLog(createLoggedEventDto);
-    super.error(message, trace);
-  }
-  async findAll(paginationQuery: PaginationQueryDto) {
+  async findAll(
+    queryRunner: QueryRunner,
+    paginationQuery: PaginationQueryDto,
+  ): Promise<loggedEvent[]> {
     const { limit, offset } = paginationQuery;
-    const events = await this.eventRepository.find({
+    return await queryRunner.manager.find(loggedEvent, {
       skip: offset,
       take: limit,
     });
-
-    if (
-      !events.every((event) => {
-        return event instanceof EventLogger;
-      })
-    ) {
-      throw new InternalServerErrorException(
-        'Database error, misshappen data returned.',
-      );
-    }
-
-    return events;
   }
 }

@@ -1,52 +1,35 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { QueryRunner } from 'typeorm';
 import { CreateDoctorDto, UpdateDoctorDto } from './dto/doctor.dto';
 import { Doctor } from './entities/doctor.entity';
 import { PatientService } from '../patient/patient.service';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { CommonService } from 'src/common/common.service';
-import { transactionCommand } from '../common/interfaces/transacactable-object.interface';
+import { Patient } from 'src/patient/entitites/patient.entity';
+import { CreatePatientDto } from 'src/patient/dto/patient.dto';
 
 @Injectable()
 export class DoctorService {
-  constructor(
-    @InjectRepository(Doctor)
-    private readonly doctorRepository: Repository<Doctor>,
-    private readonly patientService: PatientService,
-    private readonly commonService: CommonService,
-  ) {}
+  constructor(private readonly patientService: PatientService) {}
 
-  //returns all data
-  async findAll(paginationQuery: PaginationQueryDto) {
-    const { limit, offset } = paginationQuery;
-
-    const doctors = await this.doctorRepository.find({
-      relations: ['patients', 'patients.diseases'],
-      skip: offset,
-      take: limit,
-    });
-
-    if (
-      !doctors.every((doctor) => {
-        return doctor instanceof Doctor;
-      })
-    ) {
-      throw new InternalServerErrorException(
-        'Database error, misshappen data returned.',
-      );
-    }
-
-    return doctors;
+  //creates doctor entity from DTO
+  async create(
+    createDoctorDto: CreateDoctorDto,
+    patients?: Patient[],
+  ): Promise<Doctor> {
+    const doctor = new Doctor();
+    doctor.id = createDoctorDto.id;
+    doctor.department = createDoctorDto.department;
+    doctor.patients = patients ? patients : null;
+    return doctor;
   }
 
-  async findOne(id: string, skipError = false) {
-    const doctor = await this.doctorRepository.findOne(id, {
+  //finds one doctor within transaction
+  async findOne(
+    queryRunner: QueryRunner,
+    id: string,
+    skipError = true,
+  ): Promise<Doctor> {
+    const doctor = await queryRunner.manager.findOne(Doctor, id, {
       relations: ['patients', 'patients.diseases'],
     });
 
@@ -54,140 +37,73 @@ export class DoctorService {
       throw new NotFoundException(`Doctor with id: ${id} not found`);
     }
 
-    if (doctor instanceof Doctor === false) {
-      throw new InternalServerErrorException(
-        'Database error, misshappen data returned.',
-      );
-    }
-
     return doctor;
   }
 
-  //accepts single doctor data, which can include patient & disease data & stores it in db.
-  async save(createDoctorDto: CreateDoctorDto) {
-    const { queryRunner, log } = await this.commonService.provideQr(
-      'createDoctor',
-      JSON.stringify(createDoctorDto),
-    );
+  //returns all doctors within transaction
+  async findAll(
+    queryRunner: QueryRunner,
+    paginationQuery: PaginationQueryDto,
+  ): Promise<Doctor[]> {
+    const { limit, offset } = paginationQuery;
 
-    await queryRunner.startTransaction();
-    let returnData;
+    return await queryRunner.manager.find(Doctor, {
+      relations: ['patients', 'patients.diseases'],
+      skip: limit,
+      take: offset,
+    });
+  }
 
-    try {
-      //checks if doctor exists & throws an exception if it finds one with the same id
-      if (
-        await queryRunner.manager.findOne(Doctor, { id: createDoctorDto.id })
-      ) {
-        throw new BadRequestException(
-          `Doctor with id: ${createDoctorDto.id} already exists, did you mean to update the data?`,
-        );
-      }
+  //accepts single doctor data, which can include patient & disease data & stores it in db within a transaction
+  async save(
+    queryRunner: QueryRunner,
+    createDoctorDto: CreateDoctorDto,
+  ): Promise<Doctor> {
+    const patients = createDoctorDto.patients
+      ? await this.preloadPatientsLoop(createDoctorDto.patients, queryRunner)
+      : null;
 
-      //creates an array of all patients relevant to the doctor object we're creating, both stored in db & new ones
-      const patients =
-        createDoctorDto.patients &&
-        (await Promise.all(
-          createDoctorDto.patients?.map((patient) => {
-            return this.patientService.preloadPatientById(patient, queryRunner);
-          }),
-        ));
-
-      //creates a patient, with associated diseases
-      const doctor = await queryRunner.manager.create(Doctor, {
-        ...createDoctorDto,
-        patients,
-      });
-
-      returnData = await queryRunner.manager.save(doctor);
-      queryRunner.commitTransaction();
-    } catch (err) {
-      queryRunner.rollbackTransaction();
-      returnData = err.response;
-      log.errorMsg = `Error ${err.response.statusCode}: ${err.response.message}`;
-    } finally {
-      //stores log
-      await queryRunner.manager.save(log);
-
-      queryRunner.release();
-
-      return returnData;
-    }
+    //creates a patient & saves it with diseases
+    const doctor = await this.create(createDoctorDto, patients);
+    return await queryRunner.manager.save(doctor);
   }
 
   //updates doctor data & cascades down to patient & disease data. If patient isnt added to doctor object when updating, it nulls the doctor_id of unincluded patient
-  async update(id: string, updateDoctorDto: UpdateDoctorDto) {
-    const { queryRunner, log } = await this.commonService.provideQr(
-      'updateDoctor',
-      `'id': ${id}, json: ${JSON.stringify(updateDoctorDto)}`,
-    );
-    const patients =
-      updateDoctorDto.patients &&
-      (await Promise.all(
-        updateDoctorDto.patients?.map(async (patient) => {
-          if (await this.patientService.findOne(patient.id, true)) {
-            return this.patientService.update(patient.id, patient);
-          } else {
-            return this.patientService.create(patient);
-          }
-        }),
-      ));
-    const doctor = await this.doctorRepository.preload({
+  async update(
+    queryRunner: QueryRunner,
+    id: string,
+    updateDoctorDto: UpdateDoctorDto,
+  ): Promise<Doctor> {
+    await this.findOne(queryRunner, id, false);
+
+    const patients = updateDoctorDto.patients
+      ? await this.preloadPatientsLoop(updateDoctorDto.patients, queryRunner)
+      : null;
+
+    const doctor = await queryRunner.manager.preload(Doctor, {
       id: id,
       ...updateDoctorDto,
       patients,
     });
 
-    if (!doctor) throw new NotFoundException(`Doctor with id: ${id} not found`);
-
-    return await this.doctorRepository.save(doctor);
+    return await queryRunner.manager.save(doctor);
   }
 
   //deletes doctor & sets associated patients doctorId to null
-  async remove(id: string) {
-    const { queryRunner, log } = await this.commonService.provideQr(
-      'deleteDoctor',
-      `id: ${id}`,
+  async remove(queryRunner: QueryRunner, id: string): Promise<Doctor> {
+    const doctor = await this.findOne(queryRunner, id, false);
+    return await queryRunner.manager.remove(doctor);
+  }
+
+  //checks if patient exists & returns it, creates one if not
+  async preloadPatientsLoop(
+    patients: CreatePatientDto[],
+    queryRunner: QueryRunner,
+  ): Promise<Patient[]> {
+    return await Promise.all(
+      patients.map((patient) => {
+        return this.patientService.preloadPatientById(patient, queryRunner);
+      }),
     );
-
-    await queryRunner.startTransaction();
-    let returnData;
-
-    try {
-      let doctor = await queryRunner.manager.findOne(
-        Doctor,
-        { id: id },
-        {
-          relations: ['patients', 'patients.diseases'],
-        },
-      );
-
-      if (!doctor)
-        throw new NotFoundException(
-          `Error: Doctor with id: ${id} doesn't exist.`,
-        );
-
-      if (doctor.patients && doctor.patients.length > 0) {
-        doctor.patients = [];
-        doctor = await queryRunner.manager.preload(Doctor, {
-          ...doctor,
-        });
-        doctor = await queryRunner.manager.save(doctor);
-      }
-
-      returnData = await queryRunner.manager.remove(doctor);
-      queryRunner.commitTransaction();
-    } catch (err) {
-      //console.log(err);
-      queryRunner.rollbackTransaction();
-      returnData = err.response;
-      log.errorMsg = `Error ${err.response.statusCode}: ${err.response.message}`;
-    } finally {
-      //stores log
-      await queryRunner.manager.save(log);
-
-      queryRunner.release();
-
-      return returnData;
-    }
   }
 }

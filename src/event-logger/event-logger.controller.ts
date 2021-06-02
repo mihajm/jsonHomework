@@ -14,11 +14,15 @@ export class EventLoggerController {
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'offset', required: false })
   @Get()
-  findAll(@Query() paginationQuery: PaginationQueryDto) {
-    return this.commonService.tryCatchWrapper(
+  async findAll(@Query() paginationQuery: PaginationQueryDto) {
+    const { queryRunner, log } = await this.commonService.provideQr(
       'findAllEvents',
       null,
-      this.eventService.findAll(paginationQuery),
+    );
+    return await this.commonService.tryCatchWrapper(
+      await this.eventService.findAll(queryRunner, paginationQuery),
+      queryRunner,
+      log,
     );
   }
 }

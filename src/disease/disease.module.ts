@@ -4,7 +4,6 @@ import { DiseaseController } from './disease.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Disease } from './entities/disease.entity';
 import { CommonModule } from 'src/common/common.module';
-
 @Module({
   imports: [CommonModule, TypeOrmModule.forFeature([Disease])],
   providers: [DiseaseService],
