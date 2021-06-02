@@ -5,6 +5,9 @@ import { AppService } from './app.service';
 import { DoctorModule } from './doctor/doctor.module';
 import { EventLoggerModule } from './event-logger/event-logger.module';
 import { CommonModule } from './common/common.module';
+import { UserModule } from './user/user.module';
+import { PermissionModule } from './permission/permission.module';
+import { AuthenticationModule } from './authentication/authentication.module';
 
 @Module({
   imports: [
@@ -21,6 +24,9 @@ import { CommonModule } from './common/common.module';
     }),
     EventLoggerModule,
     CommonModule,
+    UserModule,
+    PermissionModule,
+    AuthenticationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
